@@ -20,8 +20,8 @@ Para a execução deste projeto, são necessárias as bibliotecas:
 
 # Execução
 
-Para executar o treinamento da CNN, basta entrar na pasta do projeto e executar o arquivo *CNN_Training.py* com o python;
-Para verificar a porcentagem de acertos do último treinamento realizado, executar o arquivo *CNN_Evaluate.py*;
-Para executar a interface para desenho e consequentemente, teste, do programa, executar o arquivo *app.py* e abrir o navegador no endereço fornecido no terminal.
+- Para executar o treinamento da CNN, basta entrar na pasta do projeto e executar o arquivo *CNN_Training.py* com o python;
+- Para verificar a porcentagem de acertos do último treinamento realizado, executar o arquivo *CNN_Evaluate.py*;
+- Para executar a interface para desenho e consequentemente, teste, do programa, executar o arquivo *app.py* e abrir o navegador no endereço fornecido no terminal.
 
 Desenvolvedores: Eryk Kooshin Suguiura & Vitor José Duarte Quintans.
