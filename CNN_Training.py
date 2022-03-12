@@ -5,7 +5,7 @@
 #======================================================================================#
 import numpy as np
 import pandas as pd
-import pickle
+import pickle 
 import seaborn as sns
 
 import matplotlib.pyplot as plt
@@ -58,7 +58,7 @@ def cnn_model():
     model.add(Dense(128, activation='relu'))
     model.add(Dense(50, activation='relu'))
     model.add(Dense(num_classes, activation='softmax'))
-    # Compile model
+    # Compilar o modelo
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
     return model
@@ -97,10 +97,7 @@ def matriz_confusao(confusion_matrix, class_names, figsize = (10,7), fontsize=14
 #                                      CODIGO
 #======================================================================================#
 
-K.image_data_format()
-
-
-# load the data
+# Carrega os dados a serem usados
 banana = np.load('data/banana.npy')
 abacaxi = np.load('data/pineapple.npy')
 pizza = np.load('data/pizza.npy')
@@ -108,13 +105,14 @@ hamburger = np.load('data/hamburger.npy')
 uva = np.load('data/grapes.npy')
 bolo = np.load('data/cake.npy')
 
+print("============Quantidade de imagens da database============")
 print(banana.shape)
 print(abacaxi.shape)
 print(pizza.shape)
 print(hamburger.shape)
 print(uva.shape)
 print(bolo.shape)
-print("====================")
+print("=========================================================")
 
 banana = np.c_[banana, np.zeros(len(banana))]
 abacaxi = np.c_[abacaxi, np.ones(len(abacaxi))]
@@ -123,43 +121,51 @@ hamburger = np.c_[hamburger, 3*np.ones(len(hamburger))]
 uva = np.c_[uva, 4*np.ones(len(uva))]
 bolo = np.c_[bolo, 5*np.ones(len(bolo))]
 
+plot_samples(banana, title='Sample banana drawings\n')
+plot_samples(abacaxi, title='Sample abacaxi drawings\n')
+plot_samples(pizza, title='Sample pizza drawings\n')
+plot_samples(hamburger, title='Sample hamburger drawings\n')
+plot_samples(uva, title='Sample uva drawings\n')
+plot_samples(bolo, title='Sample bolo drawings\n')
 
 
-plot_samples(abacaxi, title='Sample bolo drawings\n')
-
-#l = 1/0
-
-# Merging arrays and splitting the features and labels
-# 10000 pode ser aumentado
+# Juntando os vetores anteriores e separando a coluna com os identificadores
 X = np.concatenate((banana[:10000,:-1], abacaxi[:10000,:-1], pizza[:10000,:-1], hamburger[:10000,:-1], uva[:10000,:-1], bolo[:10000, :-1]), axis=0).astype('float32') # all columns but the last
 y = np.concatenate((banana[:10000,-1], abacaxi[:10000,-1], pizza[:10000,-1], hamburger[:10000,-1], uva[:10000,-1],  bolo[:10000,-1]), axis=0).astype('float32') # the last column
 
-# We than split data between train and test (80 - 20 usual ratio). Normalizing the value between 0 and 1
+# Separando data para treino e para teste [80;20].
 X_train, X_test, y_train, y_test = train_test_split(X/255.,y,test_size=0.2,random_state=0)
 
-# one hot encode outputs
+# Armazenando 'x_test' e ' y_test'
+np.save('./static/x_test.npy',X_test)
+np.save('./static/y_test.npy',y_test)
+
+
+
+# Realiza o encode em entropia cruzada categorica
 y_train_cnn = np_utils.to_categorical(y_train)
 y_test_cnn = np_utils.to_categorical(y_test)
 num_classes = y_test_cnn.shape[1]
 
-# reshape to be [samples][width][height][pixels]
+# Faz o redimensionamento da entrada para [amostras][largura][altura][pixels]
 X_train_cnn = X_train.reshape(X_train.shape[0], 28, 28, 1).astype('float32')
 X_test_cnn = X_test.reshape(X_test.shape[0], 28, 28, 1).astype('float32')
 
 
 
-
-
 np.random.seed(0)
-# build the model
-model_cnn = cnn_model()
-# Fit the model
-model_cnn.fit(X_train_cnn, y_train_cnn, validation_data=(X_test_cnn, y_test_cnn), epochs=15, batch_size=200)
-# Final evaluation of the model
+model_cnn = cnn_model() # controi o modelo
+# Realiza o treinamento com 40 epocas, estabilizando com +- 0.05 em loss
+validation = model_cnn.fit(X_train_cnn, y_train_cnn, validation_data=(X_test_cnn, y_test_cnn), epochs=40, batch_size=200)
 scores = model_cnn.evaluate(X_test_cnn, y_test_cnn, verbose=0)
-print('Final CNN accuracy: ', scores[1])
+print('Precisao CNN final: ', scores[1])
 
-
+# Plota o grafico perda por epoca
+plt.title('Perdas por Epoca')
+plt.plot(validation.history['loss'])
+plt.xlabel('Epocas')
+plt.ylabel('Perdas')
+plt.show()
 
 y_pred_cnn = model_cnn.predict(X_test_cnn, verbose=0)
 classes_y=np.argmax(y_pred_cnn,axis=1)
@@ -167,10 +173,9 @@ classes_y=np.argmax(y_pred_cnn,axis=1)
 c_matrix = metrics.confusion_matrix(y_test, classes_y)
 
 
-
 class_names = ['banana', 'abacaxi', 'pizza', 'hamburger', 'uva', 'bolo']
-matriz_confusao(c_matrix, class_names, figsize = (10,7), fontsize=14)
+matriz_confusao(c_matrix, class_names, figsize = (10,7), fontsize=14) # gerar a matriz de confusao
 
-
+# Armazena os resultados em 'model_cnn.pkl' para uso no "app.py"
 with open('model_cnn.pkl', 'wb') as file:
       pickle.dump(model_cnn, file)
