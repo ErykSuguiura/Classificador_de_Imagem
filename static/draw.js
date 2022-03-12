@@ -80,3 +80,11 @@ function save() {
     url.value = image.src;
 
 }
+
+function clear_canvas()
+{   
+    context.clearRect(0, 0, context.canvas.width, context.canvas.height); // Clears the canvas
+    context.resetTransform()
+    context.beginPath();
+    context.closePath();
+}
